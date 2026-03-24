@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchList — MediaVault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4f7ff;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --border: #d9e1ff;
+      --accent: #ff4d6d;
+      --accent2: #ff9f43;
+      --text: #1f2a44;
+      --muted: #64748b;
+      --tag: #eef2ff;
+      --green: #22c55e;
+      --blue: #38bdf8;
+      --shadow: 0 14px 40px rgba(30, 64, 175, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: radial-gradient(circle at 0% 0%, #ffffff 0%, #f7f8ff 38%, #f4f7ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 28px;
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 34px;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #ef476f, #ff9f43);
+      -webkit-background-clip: text;
+      color: transparent;
+      line-height: 0.9;
+    }
+
+    .logo span {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      color: #8690a6;
+      letter-spacing: 1px;
+      font-size: 10px;
+    }
+
+    .stats { display: flex; gap: 10px; }
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .pill.hot {
+      color: var(--accent);
+      border-color: #ffc0cb;
+      background: #fff6f8;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      gap: 24px;
+      padding: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 95px;
+      padding: 20px;
+      max-height: calc(100vh - 120px);
+      overflow: auto;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #475569;
+    }
+
+    .field { margin-bottom: 12px; }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: .2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #9aa6ff;
+      box-shadow: 0 0 0 4px #e9ecff;
+    }
+
+    textarea { min-height: 76px; resize: vertical; }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .stars { display: flex; gap: 4px; }
+    .star {
+      cursor: pointer;
+      font-size: 22px;
+      opacity: .35;
+      transition: transform .15s;
+      user-select: none;
+    }
+
+    .star.active { opacity: 1; }
+    .star:hover { transform: scale(1.08); }
+
+    .upload {
+      border: 2px dashed #cad3ff;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      background: #fbfcff;
+    }
+
+    .upload input { border: 0; padding: 0; }
+
+    .primary-btn {
+      width: 100%;
+      border: 0;
+      margin-top: 8px;
+      border-radius: 12px;
+      padding: 12px;
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+      font-size: 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ef476f, #ff6b6b);
+      box-shadow: 0 12px 24px rgba(239, 71, 111, 0.25);
+    }
+
+    .content { padding: 20px; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tab {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: linear-gradient(90deg, #6d77ff, #8a63ff);
+      border-color: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
+    }
+
+    .poster {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #eef1ff, #d9e2ff);
+    }
+
+    .card-body { padding: 13px; }
+    .meta {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: #5565dd;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .title {
+      margin: 6px 0;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .tag {
+      background: var(--tag);
+      color: #5b6590;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .desc { color: #5b667f; font-size: 13px; line-height: 1.4; min-height: 36px; }
+
+    .actions { display: flex; justify-content: space-between; margin-top: 10px; }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 9px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #556;
+    }
+
+    .btn.delete { border-color: #ffc2cf; color: #d4244f; }
+    .btn.watch { border-color: #bde8ff; color: #0284c7; }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 20px;
+      border: 2px dashed #d7ddff;
+      border-radius: 16px;
+      background: #fbfcff;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 920px) {
+      .main { grid-template-columns: 1fr; }
+      .sidebar { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">WatchList<span>// ANIME & MEDIA TRACKER</span></div>
+    <div class="stats">
+      <div class="pill" id="totalCount">0 TITLES</div>
+      <div class="pill hot" id="watchingCount">0 WATCHING</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <aside class="sidebar panel">
+      <h2 class="section-title">Add to Watchlist</h2>
+
+      <div class="field">
+        <label for="type">Type</label>
+        <select id="type">
+          <option>Anime</option><option>Web Series</option><option>Movie</option><option>TV Show</option><option>Manga</option><option>Documentary</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label for="title">Title</label><input id="title" placeholder="Attack on Titan" /></div>
+      <div class="row2">
+        <div class="field"><label for="season">Seasons</label><input id="season" type="number" min="0" placeholder="4" /></div>
+        <div class="field"><label for="episodes">Episodes</label><input id="episodes" type="number" min="0" placeholder="87" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="year">Year</label><input id="year" placeholder="2013" /></div>
+        <div class="field"><label for="genre">Genre</label><input id="genre" placeholder="Action" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="studio">Studio/Network</label><input id="studio" placeholder="MAPPA" /></div>
+        <div class="field"><label for="status">Status</label>
+          <select id="status">
+            <option value="planned">Plan to Watch</option>
+            <option value="watching">Watching</option>
+            <option value="completed">Completed</option>
+            <option value="dropped">Dropped</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label for="desc">Description</label><textarea id="desc" placeholder="Synopsis or notes..."></textarea></div>
+
+      <div class="field">
+        <label>Your Rating</label>
+        <div class="stars" id="stars"></div>
+      </div>
+
+      <div class="field upload">
+        <label for="image">Cover Image URL</label>
+        <input id="image" type="url" placeholder="https://...jpg" />
+      </div>
+
+      <div class="field"><label for="url">Watch URL (optional)</label><input id="url" type="url" placeholder="https://crunchyroll.com/..." /></div>
+      <button class="primary-btn" id="addBtn">Add To Watchlist</button>
+    </aside>
+
+    <main class="content panel">
+      <div class="toolbar">
+        <h2 class="section-title" style="margin-bottom:0">My Watchlist</h2>
+        <input id="search" placeholder="🔍 Search..." style="max-width:230px" />
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-filter="all">All</button>
+        <button class="tab" data-filter="Anime">Anime</button>
+        <button class="tab" data-filter="Web Series">Web Series</button>
+        <button class="tab" data-filter="Movie">Movie</button>
+        <button class="tab" data-filter="TV Show">TV Show</button>
+        <button class="tab" data-filter="Other">Other</button>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </main>
+  </div>
+
+  <script>
+    const els = {
+      type: document.getElementById('type'), title: document.getElementById('title'), season: document.getElementById('season'),
+      episodes: document.getElementById('episodes'), year: document.getElementById('year'), genre: document.getElementById('genre'),
+      studio: document.getElementById('studio'), status: document.getElementById('status'), desc: document.getElementById('desc'),
+      image: document.getElementById('image'), url: document.getElementById('url'), search: document.getElementById('search'),
+      grid: document.getElementById('grid'), addBtn: document.getElementById('addBtn'), tabs: document.getElementById('tabs'),
+      total: document.getElementById('totalCount'), watching: document.getElementById('watchingCount')
+    };
+
+    const starsEl = document.getElementById('stars');
+    let rating = 0;
+    for (let i = 1; i <= 5; i++) {
+      const s = document.createElement('span');
+      s.className = 'star';
+      s.textContent = '⭐';
+      s.dataset.v = i;
+      s.onclick = () => {
+        rating = i;
+        [...starsEl.children].forEach((n, idx) => n.classList.toggle('active', idx < i));
+      };
+      starsEl.appendChild(s);
+    }
+
+    const KEY = 'watchlist_bright_v1';
+    let items = JSON.parse(localStorage.getItem(KEY) || '[]');
+    let activeFilter = 'all';
+
+    const save = () => localStorage.setItem(KEY, JSON.stringify(items));
+
+    const esc = (v = '') => v.replace(/[&<>'"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]));
+
+    function render() {
+      const q = els.search.value.toLowerCase().trim();
+      const filtered = items.filter(i => {
+        const matchType = activeFilter === 'all' || i.type === activeFilter;
+        const hay = `${i.title} ${i.genre} ${i.studio} ${i.desc}`.toLowerCase();
+        return matchType && (!q || hay.includes(q));
+      });
+
+      els.total.textContent = `${items.length} TITLES`;
+      els.watching.textContent = `${items.filter(i => i.status === 'watching').length} WATCHING`;
+
+      if (!filtered.length) {
+        els.grid.innerHTML = '<div class="empty">No titles yet. Add your first anime, movie, or series ✨</div>';
+        return;
+      }
+
+      els.grid.innerHTML = filtered.map((i) => `
+        <article class="card">
+          <img class="poster" src="${esc(i.image || '')}" onerror="this.style.display='none'" alt="${esc(i.title)}" />
+          <div class="card-body">
+            <div class="meta">${esc(i.type)} • ${esc(i.status)}</div>
+            <h3 class="title">${esc(i.title)}</h3>
+            <div class="tags">
+              ${i.genre ? `<span class="tag">${esc(i.genre)}</span>` : ''}
+              ${i.year ? `<span class="tag">${esc(i.year)}</span>` : ''}
+              ${i.episodes ? `<span class="tag">${esc(i.episodes)} eps</span>` : ''}
+            </div>
+            <p class="desc">${esc(i.desc || 'No description yet.')}</p>
+            <div>Rating: ${'⭐'.repeat(i.rating || 0) || '—'}</div>
+            <div class="actions">
+              ${i.url ? `<button class="btn watch" onclick="window.open('${esc(i.url)}','_blank')">Open Link</button>` : '<span></span>'}
+              <button class="btn delete" onclick="removeItem('${i.id}')">Delete</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function resetForm() {
+      ['title','season','episodes','year','genre','studio','desc','image','url'].forEach(k => els[k].value = '');
+      els.status.value = 'planned';
+      els.type.value = 'Anime';
+      rating = 0;
+      [...starsEl.children].forEach(s => s.classList.remove('active'));
+    }
+
+    function addItem() {
+      if (!els.title.value.trim()) {
+        alert('Please enter a title first.');
+        return;
+      }
+      items.unshift({
+        id: crypto.randomUUID(),
+        type: els.type.value,
+        title: els.title.value.trim(),
+        season: Number(els.season.value || 0),
+        episodes: Number(els.episodes.value || 0),
+        year: els.year.value.trim(),
+        genre: els.genre.value.trim(),
+        studio: els.studio.value.trim(),
+        status: els.status.value,
+        desc: els.desc.value.trim(),
+        rating,
+        image: els.image.value.trim(),
+        url: els.url.value.trim(),
+        createdAt: new Date().toISOString()
+      });
+      save();
+      render();
+      resetForm();
+    }
+
+    window.removeItem = (id) => {
+      items = items.filter(i => i.id !== id);
+      save();
+      render();
+    }
+
+    els.addBtn.onclick = addItem;
+    els.search.oninput = render;
+    els.tabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab');
+      if (!btn) return;
+      activeFilter = btn.dataset.filter;
+      [...els.tabs.querySelectorAll('.tab')].forEach(t => t.classList.toggle('active', t === btn));
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
